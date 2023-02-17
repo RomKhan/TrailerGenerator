@@ -80,37 +80,38 @@ def match_final(in_folder, out_folder, trailer_clips_count, movie_clips_count, m
     table.to_csv(f'{out_folder}{os.sep}match.csv')
 
 
-matched_path = 'matched'
-movies_path = 'compressed'
-json_path = 'films'
-if not os.path.exists('final'):
-    os.mkdir('final')
-for directory in tqdm(os.listdir(matched_path)):
-    in_folder = f'{matched_path}{os.sep}{directory}'
-    out_folder = f'final{os.sep}{directory}'
-    if not os.path.isdir(in_folder) or os.path.isdir(out_folder):
-        print(directory)
-        continue
-    match_folder = f'{matched_path}{os.sep}{directory}'
+def save_final():
+    matched_path = 'matched'
+    movies_path = 'compressed'
+    json_path = 'films'
+    if not os.path.exists('final'):
+        os.mkdir('final')
+    for directory in tqdm(os.listdir(matched_path)):
+        in_folder = f'{matched_path}{os.sep}{directory}'
+        out_folder = f'final{os.sep}{directory}'
+        if not os.path.isdir(in_folder) or os.path.isdir(out_folder):
+            print(directory)
+            continue
+        match_folder = f'{matched_path}{os.sep}{directory}'
 
-    try:
-        with open(f'{json_path}{os.sep}{directory}{os.sep}data.json', 'rb') as f:
-            data = json.load(f)
-        movie_threshold = data['movie_threshold']
-        trailer_threshold = data['trailer_threshold']
-    except:
-        continue
+        try:
+            with open(f'{json_path}{os.sep}{directory}{os.sep}data.json', 'rb') as f:
+                data = json.load(f)
+            movie_threshold = data['movie_threshold']
+            trailer_threshold = data['trailer_threshold']
+        except:
+            continue
 
-    trailer_name = glob.glob(f'{movies_path}{os.sep}{directory}{os.sep}trailer.*')[0]
-    movie_name = glob.glob(f'{movies_path}{os.sep}{directory}{os.sep}movie.*')[0]
-    trailer_clips = detect(trailer_name, ContentDetector(threshold=trailer_threshold, min_scene_len=2))
-    movie_clips = detect(movie_name, ContentDetector(threshold=movie_threshold, min_scene_len=2))
-    frames_per_second = 5
-    delete_tiny_scenes(trailer_clips, frames_per_second)
-    delete_tiny_scenes(movie_clips, frames_per_second)
-    movie_clips_count = len(movie_clips)
-    trailer_clips_count = len(trailer_clips)
-    print(movie_clips_count)
-    os.mkdir(out_folder)
+        trailer_name = glob.glob(f'{movies_path}{os.sep}{directory}{os.sep}trailer.*')[0]
+        movie_name = glob.glob(f'{movies_path}{os.sep}{directory}{os.sep}movie.*')[0]
+        trailer_clips = detect(trailer_name, ContentDetector(threshold=trailer_threshold, min_scene_len=2))
+        movie_clips = detect(movie_name, ContentDetector(threshold=movie_threshold, min_scene_len=2))
+        frames_per_second = 5
+        delete_tiny_scenes(trailer_clips, frames_per_second)
+        delete_tiny_scenes(movie_clips, frames_per_second)
+        movie_clips_count = len(movie_clips)
+        trailer_clips_count = len(trailer_clips)
+        print(movie_clips_count)
+        os.mkdir(out_folder)
 
-    match_final(in_folder, out_folder, trailer_clips_count, movie_clips_count, movie_clips)
+        match_final(in_folder, out_folder, trailer_clips_count, movie_clips_count, movie_clips)

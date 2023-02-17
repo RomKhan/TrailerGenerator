@@ -3,11 +3,10 @@ import os
 import glob
 from tqdm import tqdm
 
-side = 224
 frames_per_second = 5
 
 
-def compress(cap, out_name):
+def compress(cap, out_name, side):
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
     out = cv2.VideoWriter(out_name, fourcc, frames_per_second, (side, side))
     sec = 0
@@ -26,21 +25,22 @@ def compress(cap, out_name):
     cv2.destroyAllWindows()
 
 
-movies_path = f'films'
-if not os.path.exists('compressed'):
-    os.mkdir('compressed')
-for directory in tqdm(os.listdir(movies_path)):
-    if not os.path.isdir(f'{movies_path}{os.sep}{directory}'):
-        continue
-    trailer_name = glob.glob(f'{movies_path}{os.sep}{directory}{os.sep}trailer.*')[0]
-    movie_name = glob.glob(f'{movies_path}{os.sep}{directory}{os.sep}movie.*')[0]
-    try:
-        cap_trailer = cv2.VideoCapture(trailer_name)
-        cap_movie = cv2.VideoCapture(movie_name)
-        out_folder = f'compressed{os.sep}{directory}'
-        if not os.path.exists(out_folder):
-            os.mkdir(out_folder)
-        compress(cap_trailer, out_folder + os.sep + 'trailer.avi')
-        compress(cap_movie, out_folder + os.sep + 'movie.avi')
-    except:
-        print(directory)
+def compress_all():
+    movies_path = f'films'
+    if not os.path.exists('compressed'):
+        os.mkdir('compressed')
+    for directory in tqdm(os.listdir(movies_path)):
+        if not os.path.isdir(f'{movies_path}{os.sep}{directory}'):
+            continue
+        trailer_name = glob.glob(f'{movies_path}{os.sep}{directory}{os.sep}trailer.*')[0]
+        movie_name = glob.glob(f'{movies_path}{os.sep}{directory}{os.sep}movie.*')[0]
+        try:
+            cap_trailer = cv2.VideoCapture(trailer_name)
+            cap_movie = cv2.VideoCapture(movie_name)
+            out_folder = f'compressed{os.sep}{directory}'
+            if not os.path.exists(out_folder):
+                os.mkdir(out_folder)
+            compress(cap_trailer, out_folder + os.sep + 'trailer.avi', 224)
+            compress(cap_movie, out_folder + os.sep + 'movie.avi', 224)
+        except:
+            print(directory)

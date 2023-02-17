@@ -122,21 +122,21 @@ def save_matching(dict_indexes, trailer_path, movie_path, scene_list_trailer, sc
                                                       video_name=f'{dict_indexes[i][0]}')
         os.chdir(f'..{os.sep}..{os.sep}..')
 
+def match_all():
+    movies_path = f'compressed'
+    if not os.path.exists('matched'):
+        os.mkdir('matched')
+    for directory in tqdm(os.listdir(movies_path)):
+        if not os.path.isdir(f'{movies_path}{os.sep}{directory}'):
+            continue
 
-movies_path = f'compressed'
-if not os.path.exists('matched'):
-    os.mkdir('matched')
-for directory in tqdm(os.listdir(movies_path)):
-    if not os.path.isdir(f'{movies_path}{os.sep}{directory}'):
-        continue
+        out_folder = f'matched{os.sep}{directory}'
+        if os.path.isdir(out_folder):
+            continue
+        os.mkdir(out_folder)
 
-    out_folder = f'matched{os.sep}{directory}'
-    if os.path.isdir(out_folder):
-        continue
-    os.mkdir(out_folder)
+        trailer_name = glob.glob(f'{movies_path}{os.sep}{directory}{os.sep}trailer.*')[0]
+        movie_name = glob.glob(f'{movies_path}{os.sep}{directory}{os.sep}movie.*')[0]
+        data = match(movie_name, trailer_name)
 
-    trailer_name = glob.glob(f'{movies_path}{os.sep}{directory}{os.sep}trailer.*')[0]
-    movie_name = glob.glob(f'{movies_path}{os.sep}{directory}{os.sep}movie.*')[0]
-    data = match(movie_name, trailer_name)
-
-    save_matching(data[0], trailer_name, movie_name, data[1][0], data[1][1], out_folder)
+        save_matching(data[0], trailer_name, movie_name, data[1][0], data[1][1], out_folder)
