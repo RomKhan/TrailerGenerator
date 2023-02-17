@@ -99,7 +99,7 @@ class ShotSelect():
         return torch.sort(best_brames_idx)[0]
 
 
-    def predict_kmeans(self, shots_count=20, k=3):
+    def cosinus_dist(self, shots_count=20, k=3):
         shelve_image = shelve.open(self.shelve_image_path, 'r')
         shelve_text = shelve.open(self.shelve_text_path, 'r')
         movie = shelve_image['movie']
@@ -114,6 +114,28 @@ class ShotSelect():
         for i in range(len(best_brames_idx)):
             for j in range(k):
                 scenes_pred[shelve_image[f'{best_brames_idx[i][j]}']['shot_number_global']] += best_values[i][j]
+
+        best_values, best_brames_idx = scenes_pred.topk(shots_count, dim=0)
+        return torch.sort(best_brames_idx)[0]
+
+
+    def cosinus_dist_with_bathcnorm(self, shots_count=20):
+        shelve_image = shelve.open(self.shelve_image_path, 'r')
+        shelve_text = shelve.open(self.shelve_text_path, 'r')
+        movie = shelve_image['movie']
+        synopsis_embedding = shelve_text[movie]['synopsis_embedding'].to(self.device).to(torch.float32)
+        pic_embeddings = []
+
+        for i in range(shelve_image['capacity']):
+            pic_embeddings.append(shelve_image[f'{i}']['pic_embedding'].to(self.device))
+        pic_embeddings = torch.stack(pic_embeddings)
+
+        clip_cosine_similaity = synopsis_embedding.matmul(nn.functional.normalize(pic_embeddings.T)).T
+        max_dist, _ = clip_cosine_similaity.max(dim=0)
+
+        scenes_pred = torch.zeros(shelve_image[f'{i-1}']['shot_number_global'])
+        for i in range(len(max_dist)):
+            scenes_pred[shelve_image[f'{i}']['shot_number_global']] += max_dist[i]
 
         best_values, best_brames_idx = scenes_pred.topk(shots_count, dim=0)
         return torch.sort(best_brames_idx)[0]

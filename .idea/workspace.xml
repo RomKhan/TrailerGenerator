@@ -2,9 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="1aa7de22-a63c-422f-a921-979c0d57372f" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/comress.py" beforeDir="false" afterPath="$PROJECT_DIR$/comress.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/save_final.py" beforeDir="false" afterPath="$PROJECT_DIR$/save_final.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scene_match.py" beforeDir="false" afterPath="$PROJECT_DIR$/scene_match.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Enums.py" beforeDir="false" afterPath="$PROJECT_DIR$/Enums.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model.py" beforeDir="false" afterPath="$PROJECT_DIR$/model.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,7 +58,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
-      <option name="PARAMETERS" value="1 1 1 1 cpu movie.mp4 data.json" />
+      <option name="PARAMETERS" value="1 1 1 1 1 cpu movie.mp4 data.json" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -77,6 +78,7 @@
       <workItem from="1676145166922" duration="11890000" />
       <workItem from="1676200721141" duration="18700000" />
       <workItem from="1676620610314" duration="602000" />
+      <workItem from="1676665786571" duration="34000" />
     </task>
     <servers />
   </component>
@@ -110,6 +112,6 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/TrailerGenerator$main.coverage" NAME="main.py Coverage Results" MODIFIED="1676155738020" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/TrailerGenerator$main_py.coverage" NAME="main.py Coverage Results" MODIFIED="1676222161920" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/TrailerGenerator$main_py.coverage" NAME="main.py Coverage Results" MODIFIED="1676665795006" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

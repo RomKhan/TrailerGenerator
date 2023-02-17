@@ -5,7 +5,7 @@ import json
 from tqdm import tqdm
 from PIL import Image
 import requests
-from Enums import WorkType, Status
+from Enums import WorkType, Status, ModelType
 from comress import compress
 import pandas as pd
 from scene_match import delete_tiny_scenes
@@ -151,9 +151,10 @@ def main():
     is_compressed = False if int(sys.argv[2]) == 0 else True
     is_scene_detected = False if int(sys.argv[3]) == 0 else True
     is_embeddings_created = False if int(sys.argv[4]) == 0 else True
-    device = sys.argv[5]
-    movie = sys.argv[6]
-    json_path = sys.argv[7]
+    modelType = ModelType(int(sys.argv[5]))
+    device = sys.argv[6]
+    movie = sys.argv[7]
+    json_path = sys.argv[8]
 
     path_csv = 'temp/scenes.csv'
     path_movie = 'temp/movie.avi'
@@ -185,7 +186,7 @@ def main():
     if not is_embeddings_created:
         clip_model = CLIPWrapperEval(device)
         transform = transforms.Compose([
-            lambda x: Image.fromarray(x),  # to PIL
+            lambda x: Image.fromarray(x),
             transforms.Resize((224, 224)),
             clip_model.preprocess
         ])
@@ -199,7 +200,14 @@ def main():
         print('end embeddings creating end')
 
     model_api = ShotSelect(device, shelve_image_path, shelve_text_path)
-    best_shots_idx = model_api.predict_linear(50)
+
+    if modelType == ModelType.COSINUSDIST:
+        best_shots_idx = model_api.cosinus_dist(50)
+    elif modelType == ModelType.COSINUSDISTWITHBATCHNORM:
+        best_shots_idx = model_api.cosinus_dist_with_bathcnorm(50)
+    else:
+        print('unknown model type')
+        return 0
 
     cap_movie = cv2.VideoCapture(path_movie)
     save_trailer(path_csv, best_shots_idx, 'trailer.avi', cap_movie, side)
