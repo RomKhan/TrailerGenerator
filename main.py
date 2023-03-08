@@ -18,6 +18,8 @@ import clip
 from torchvision import transforms
 from CLIPWrapperEval import CLIPWrapperEval
 from model import ShotSelect
+import ffmpeg
+import scenedetect
 
 frames_per_second = 5
 frames_per_scene = 1
@@ -121,29 +123,44 @@ def scenes_detect(json_path, movie_path):
     table.to_csv(f'temp/scenes.csv')
 
 
-def save_trailer(path_csv, shots_idx, out_name, cap, side):
-    fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    out = cv2.VideoWriter(out_name, fourcc, frames_per_second, (side, side))
-    sec = 0
-    df = pd.read_csv(path_csv)
-    current_shot = 0
+def save_trailer(df, shots_idx, out_name, video_path):
+    probe = ffmpeg.probe(video_path)
+    video_info = next(s for s in probe['streams'] if s['codec_type'] == 'video')
+    fps = int(video_info['r_frame_rate'].split('/')[0]) / int(video_info['r_frame_rate'].split('/')[1])
+    in_file = ffmpeg.input(video_path)
+    trims = []
 
-    while True:
-        ret, frame = cap.read()
-        if ret:
-            if  df.at[shots_idx[current_shot].item(), 'start_frame'] <= sec <= df.at[shots_idx[current_shot].item(), 'end_frame']:
-                out.write(frame)
-            elif sec == df.at[shots_idx[current_shot].item(), 'end_frame'] + 1:
-                current_shot += 1
-                if current_shot >= len(shots_idx):
-                    break
-            sec += 1
-        else:
-            break
 
-    cap.release()
-    out.release()
-    cv2.destroyAllWindows()
+    for i in range(len(shots_idx)):
+        start = df.at[shots_idx[i].item(), 'start_frame'] / fps
+        end = df.at[shots_idx[i].item(), 'end_frame'] / fps
+        vid = (
+            in_file
+                .trim(start=start, end=end)
+                .setpts('PTS-STARTPTS')
+        )
+        aud = (
+            in_file
+                .filter_('atrim', start=start, end=end)
+                .filter_('asetpts', 'PTS-STARTPTS')
+        )
+
+        trims.append(vid)
+        trims.append(aud)
+
+
+    joined = ffmpeg.concat(
+        *trims, v=1,
+        a=1, unsafe=True).node
+    out = ffmpeg.output(joined[0], joined[1], f"{out_name}.mp4")
+    out.run()
+
+
+def convert_shots(compressed_frame_per_second, df, shots_idx):
+    for i in shots_idx:
+        df.at[i.item(), 'start_frame'] *= compressed_frame_per_second
+        df.at[i.item(), 'end_frame'] *= compressed_frame_per_second
+        df.at[i.item(), 'end_frame'] -= 4
 
 
 def main():
@@ -153,8 +170,8 @@ def main():
     is_embeddings_created = False if int(sys.argv[4]) == 0 else True
     modelType = ModelType(int(sys.argv[5]))
     device = sys.argv[6]
-    movie = sys.argv[7]
-    json_path = sys.argv[8]
+    movie = f'in{os.sep}{sys.argv[7]}'
+    json_path = f'in{os.sep}{sys.argv[8]}'
 
     path_csv = 'temp/scenes.csv'
     path_movie = 'temp/movie.avi'
@@ -199,18 +216,25 @@ def main():
         saveTextEmbedding(path_movie, clip_model, shelve_text_path, device, json_path)
         print('end embeddings creating end')
 
+    print('shots selecting start')
     model_api = ShotSelect(device, shelve_image_path, shelve_text_path)
 
-    if modelType == ModelType.COSINUSDIST:
-        best_shots_idx = model_api.cosinus_dist(50)
+    if modelType == ModelType.COSINUSDISTKMEANS:
+        best_shots_idx = model_api.cosinus_dist_KMeans(50)
     elif modelType == ModelType.COSINUSDISTWITHBATCHNORM:
         best_shots_idx = model_api.cosinus_dist_with_bathcnorm(50)
+    elif modelType == ModelType.COSINUSDIST:
+        best_shots_idx = model_api.cosinus_dist(50)
     else:
         print('unknown model type')
         return 0
+    print('shots selecting end')
 
-    cap_movie = cv2.VideoCapture(path_movie)
-    save_trailer(path_csv, best_shots_idx, 'trailer.avi', cap_movie, side)
+    print('video saving start')
+    df_scenes = pd.read_csv(path_csv)
+    convert_shots(5, df_scenes, best_shots_idx)
+    save_trailer(df_scenes, best_shots_idx, 'trailer', movie)
+    print('video saving end')
 
 
 if __name__ == "__main__":

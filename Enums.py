@@ -7,8 +7,9 @@ class WorkType(Enum):
 
 
 class ModelType(Enum):
-    COSINUSDIST = 0
+    COSINUSDISTKMEANS = 0
     COSINUSDISTWITHBATCHNORM = 1
+    COSINUSDIST = 2
 
 
 class Status(Enum):

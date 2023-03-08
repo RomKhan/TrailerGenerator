@@ -2,6 +2,18 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="1aa7de22-a63c-422f-a921-979c0d57372f" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/in/data.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/in/movie.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/output.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/temp/data_image.db" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/temp/data_text.db" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/temp/movie.avi" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/temp/scenes.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/trailer.avi" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/trailer_g.avi" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/trailerb.mp4" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/TrailerGenerator.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/TrailerGenerator.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Enums.py" beforeDir="false" afterPath="$PROJECT_DIR$/Enums.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
@@ -58,7 +70,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
-      <option name="PARAMETERS" value="1 1 1 1 1 cpu movie.mp4 data.json" />
+      <option name="PARAMETERS" value="1 1 1 1 2 cpu movie.mp4 data.json" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -78,7 +90,12 @@
       <workItem from="1676145166922" duration="11890000" />
       <workItem from="1676200721141" duration="18700000" />
       <workItem from="1676620610314" duration="602000" />
-      <workItem from="1676665786571" duration="34000" />
+      <workItem from="1676665786571" duration="1241000" />
+      <workItem from="1677576052127" duration="632000" />
+      <workItem from="1678204980735" duration="601000" />
+      <workItem from="1678216789483" duration="11842000" />
+      <workItem from="1678288068665" duration="1668000" />
+      <workItem from="1678289749987" duration="11463000" />
     </task>
     <servers />
   </component>
@@ -112,6 +129,6 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/TrailerGenerator$main.coverage" NAME="main.py Coverage Results" MODIFIED="1676155738020" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/TrailerGenerator$main_py.coverage" NAME="main.py Coverage Results" MODIFIED="1676665795006" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/TrailerGenerator$main_py.coverage" NAME="main.py Coverage Results" MODIFIED="1678300987181" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
