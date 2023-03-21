@@ -102,6 +102,24 @@ def saveTextEmbedding(path_movie, wrapper, shelve_path, device, json_path):
     shelve_file.close()
 
 
+def getUserEmbeddings(device, json_path):
+    with open(json_path) as f:
+        data = json.load(f)
+        if 'user' not in data:
+            return False, None
+        user = data['user']
+
+    user_sentences = user.replace(',', '.').replace('!', '.').replace('\'', '.').replace('"', '.').replace('?', '.').split(".")
+    while "" in user_sentences:
+        user_sentences.remove("")
+
+    clip_model = CLIPWrapperEval(device)
+    with torch.no_grad():
+        user_embedding = clip_model.forward_text(clip.tokenize(user_sentences).to(device))
+
+    return True, user_embedding
+
+
 def scenes_detect(json_path, movie_path):
     try:
         with open(json_path, 'rb') as f:
@@ -169,9 +187,10 @@ def main():
     is_scene_detected = False if int(sys.argv[3]) == 0 else True
     is_embeddings_created = False if int(sys.argv[4]) == 0 else True
     modelType = ModelType(int(sys.argv[5]))
-    device = sys.argv[6]
-    movie = f'in{os.sep}{sys.argv[7]}'
-    json_path = f'in{os.sep}{sys.argv[8]}'
+    count_of_shots = int(sys.argv[6])
+    device = sys.argv[7]
+    movie = f'in{os.sep}{sys.argv[8]}'
+    json_path = f'in{os.sep}{sys.argv[9]}'
 
     path_csv = 'temp/scenes.csv'
     path_movie = 'temp/movie.avi'
@@ -216,15 +235,24 @@ def main():
         saveTextEmbedding(path_movie, clip_model, shelve_text_path, device, json_path)
         print('end embeddings creating end')
 
+    is_user_description, embeddings = getUserEmbeddings(device=device, json_path=json_path)
+
     print('shots selecting start')
     model_api = ShotSelect(device, shelve_image_path, shelve_text_path)
 
     if modelType == ModelType.COSINUSDISTKMEANS:
-        best_shots_idx = model_api.cosinus_dist_KMeans(50)
+        if is_user_description:
+            print('User derscription not supported')
+        best_shots_idx = model_api.cosinus_dist_KMeans(count_of_shots)
     elif modelType == ModelType.COSINUSDISTWITHBATCHNORM:
-        best_shots_idx = model_api.cosinus_dist_with_bathcnorm(50)
+        if is_user_description:
+            print('User derscription not supported')
+        best_shots_idx = model_api.cosinus_dist_with_bathcnorm(count_of_shots)
     elif modelType == ModelType.COSINUSDIST:
-        best_shots_idx = model_api.cosinus_dist(50)
+        if not is_user_description:
+            best_shots_idx = model_api.cosinus_dist(count_of_shots)
+        else:
+            best_shots_idx = model_api.cosinus_dist_with_custom_description(embeddings, count_of_shots)
     else:
         print('unknown model type')
         return 0

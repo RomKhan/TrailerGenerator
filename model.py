@@ -6,6 +6,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 
 from PicsDataset import PicsDataset
+from scipy.stats import norm
 
 
 class SceneClassifier(torch.nn.Module):
@@ -83,7 +84,7 @@ class ShotSelect():
         ds = PicsDataset(path=self.shelve_image_path)
         dl = DataLoader(ds, batch_size=256, shuffle=True)
         model = SceneClassifier(0)
-        #model.load_state_dict(torch.load('weights'))
+        # model.load_state_dict(torch.load('weights'))
         model.eval()
 
         scenes = torch.zeros(ds.get_scenes_count())
@@ -98,7 +99,6 @@ class ShotSelect():
         best_values, best_brames_idx = scenes.topk(shots_count, dim=0)
         return torch.sort(best_brames_idx)[0]
 
-
     def cosinus_dist_KMeans(self, shots_count=20, k=3):
         shelve_image = shelve.open(self.shelve_image_path, 'r')
         shelve_text = shelve.open(self.shelve_text_path, 'r')
@@ -109,7 +109,7 @@ class ShotSelect():
             pic_embedding = shelve_image[f'{i}']['pic_embedding'].to(self.device)
             clip_cosine_simularity[i] = synopsis_embedding.matmul(pic_embedding.T)
 
-        scenes_pred = torch.zeros(shelve_image[f'{i-1}']['shot_number_global'])
+        scenes_pred = torch.zeros(shelve_image[f'{i - 1}']['shot_number_global'])
         best_values, best_brames_idx = clip_cosine_simularity.T.topk(k, dim=1)
         for i in range(len(best_brames_idx)):
             for j in range(k):
@@ -117,7 +117,6 @@ class ShotSelect():
 
         best_values, best_brames_idx = scenes_pred.topk(shots_count, dim=0)
         return torch.sort(best_brames_idx)[0]
-
 
     def get_movie_frames(self, shelve_image):
         pics = []
@@ -132,23 +131,60 @@ class ShotSelect():
 
         return torch.stack(pics), shot_number_global
 
-
-    def cosinus_dist(self, shots_count=20):
+    def cosinus_dist(self, shots_count=30):
         shelve_image = shelve.open(self.shelve_image_path, 'r')
         shelve_text = shelve.open(self.shelve_text_path, 'r')
         movie = shelve_image['movie']
         synopsis_embedding = shelve_text[movie]['synopsis_embedding'].to(self.device).to(torch.float32)
+        summaries_embedding = shelve_text[movie]['summaries_embedding'].to(self.device).to(torch.float32)
+        ganres_embedding = shelve_text[movie]['ganres_embedding'].to(self.device).to(torch.float32)
         pics, shot_number_global = self.get_movie_frames(shelve_image)
-        clip_cosine_simularity = synopsis_embedding.matmul(nn.functional.normalize(pics).T.to(self.device))
-        max_dist, _ = clip_cosine_simularity.max(dim=0)
+        clip_cosine_similaity_synopsis = synopsis_embedding.matmul(nn.functional.normalize(pics).T.to(self.device))
+        clip_cosine_similaity_summaries = summaries_embedding.matmul(nn.functional.normalize(pics).T.to(self.device))
+        clip_cosine_similaity_ganres = ganres_embedding.matmul(nn.functional.normalize(pics).T.to(self.device))
+        max_dist = (0.75 * clip_cosine_similaity_synopsis.max(dim=0)[0] +
+                    0.20 * clip_cosine_similaity_summaries.max(dim=0)[0] +
+                    0.05 * clip_cosine_similaity_ganres.max(dim=0)[0]
+                    )
+
+        max_dist = max_dist.cpu()
 
         scenes_pred = torch.zeros(len(set(shot_number_global)))
+        pics_count = len(set(shot_number_global))
         for i in range(len(max_dist)):
-            scenes_pred[shot_number_global[i]] += max_dist[i]
+            l = norm.cdf(pics_count / max(abs(i - pics_count / 2), 1))
+            scenes_pred[shot_number_global[i]] += l * max_dist[i]
 
         best_values, best_brames_idx = scenes_pred.topk(shots_count, dim=0)
         return torch.sort(best_brames_idx)[0]
 
+    def cosinus_dist_with_custom_description(self, user_embedding, shots_count=30):
+        shelve_image = shelve.open(self.shelve_image_path, 'r')
+        shelve_text = shelve.open(self.shelve_text_path, 'r')
+        movie = shelve_image['movie']
+        synopsis_embedding = shelve_text[movie]['synopsis_embedding'].to(self.device).to(torch.float32)
+        summaries_embedding = shelve_text[movie]['summaries_embedding'].to(self.device).to(torch.float32)
+        ganres_embedding = shelve_text[movie]['ganres_embedding'].to(self.device).to(torch.float32)
+        pics, shot_number_global = self.get_movie_frames(shelve_image)
+        clip_cosine_similaity_synopsis = synopsis_embedding.matmul(nn.functional.normalize(pics).T.to(self.device))
+        clip_cosine_similaity_summaries = summaries_embedding.matmul(nn.functional.normalize(pics).T.to(self.device))
+        clip_cosine_similaity_ganres = ganres_embedding.matmul(nn.functional.normalize(pics).T.to(self.device))
+        clip_cosine_similaity_user = user_embedding.matmul(nn.functional.normalize(pics).T.to(self.device))
+        max_dist = 0.5 * (0.75 * clip_cosine_similaity_synopsis.max(dim=0)[0] +
+                          0.20 * clip_cosine_similaity_summaries.max(dim=0)[0] +
+                          0.05 * clip_cosine_similaity_ganres.max(dim=0)[0]) + 0.5 * \
+                   clip_cosine_similaity_user.max(dim=0)[0]
+
+        max_dist = max_dist.cpu()
+
+        scenes_pred = torch.zeros(len(set(shot_number_global)))
+        pics_count = len(set(shot_number_global))
+        for i in range(len(max_dist)):
+            l = norm.cdf(pics_count / max(abs(i - pics_count / 2), 1))
+            scenes_pred[shot_number_global[i]] += l * max_dist[i]
+
+        best_values, best_brames_idx = scenes_pred.topk(shots_count, dim=0)
+        return torch.sort(best_brames_idx)[0]
 
     def cosinus_dist_with_bathcnorm(self, shots_count=20):
         shelve_image = shelve.open(self.shelve_image_path, 'r')
@@ -164,7 +200,7 @@ class ShotSelect():
         clip_cosine_similaity = synopsis_embedding.matmul(nn.functional.normalize(pic_embeddings.T)).T
         max_dist, _ = clip_cosine_similaity.max(dim=0)
 
-        scenes_pred = torch.zeros(shelve_image[f'{i-1}']['shot_number_global'])
+        scenes_pred = torch.zeros(shelve_image[f'{i - 1}']['shot_number_global'])
         for i in range(len(max_dist)):
             scenes_pred[shelve_image[f'{i}']['shot_number_global']] += max_dist[i]
 
